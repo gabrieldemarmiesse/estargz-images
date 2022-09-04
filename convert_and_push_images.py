@@ -1,4 +1,5 @@
 import subprocess
+from list_of_images_to_optimize import images_to_optimize
 
 CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse/"
 COMPRESSION_LEVEL = 6
@@ -32,14 +33,8 @@ def convert_and_push(docker_image_name: str, entrypoint=None, args=None):
         + additional_options
     )
     subprocess.check_call(["nerdctl", "push", estargz_docker_image_name])
-    subprocess.check_call(
-        ["nerdctl", "image", "rm", docker_image_name, estargz_docker_image_name]
-    )
     return estargz_docker_image_name
 
 
-convert_and_push("python:3.7", '["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.8", '["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.9", '["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.10", '["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.10-slim", '["python", "-c", "print(\'hello world\')"]')
+for image_and_args in images_to_optimize:
+    convert_and_push(*image_and_args)
