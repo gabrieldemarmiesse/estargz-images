@@ -3,4 +3,5 @@ wget https://github.com/containerd/nerdctl/releases/download/v0.22.2/nerdctl-ful
 
 tar Cxzvvf /usr/local /tmp/nerdctl.tar.gz
 
+mkdir /etc/containerd/
 cat ./tools/containerd-config.toml >> /etc/containerd/config.toml
