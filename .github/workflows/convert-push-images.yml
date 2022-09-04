@@ -1,0 +1,19 @@
+name: Benchmark
+on: [push]
+
+jobs:
+  convert-push-images:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install tools
+        run: bash tools/install-nerdctl.sh
+      - name: Login to registry
+        run: echo ${{ secrets.REPOSITORY_PASSWORD }} | nerdctl login -u  ${{ secrets.REPOSITORY_USERNAME }} --password-stdin
+      - name: Convert and push images
+        run: |
+          bash start-containerd-stargz.sh
+          python ./convert_and_push_images.py
