@@ -5,9 +5,7 @@ COMPRESSION_LEVEL = 6
 
 
 def convert_and_push_one_image(docker_image_name: str):
-    subprocess.check_call(
-        ["nerdctl", "--snapshotter=stargz", "pull", docker_image_name]
-    )
+    subprocess.check_call(["nerdctl", "pull", docker_image_name])
 
     if "/" not in docker_image_name:
         normalized_docker_image_name = "docker.io/library/" + docker_image_name
@@ -17,9 +15,10 @@ def convert_and_push_one_image(docker_image_name: str):
     estargz_docker_image_name = CONVERTED_IMAGES_PREFIX + docker_image_name
     subprocess.check_call(
         [
-            "ctr-remote",
+            "nerdctl",
             "image",
-            "optimize",
+            "convert",
+            "--estargz",
             "--oci",
             "--estargz-compression-level",
             str(COMPRESSION_LEVEL),
@@ -27,10 +26,8 @@ def convert_and_push_one_image(docker_image_name: str):
             estargz_docker_image_name,
         ]
     )
-    subprocess.check_call(
-        ["nerdctl", "--snapshotter=stargz", "push", estargz_docker_image_name]
-    )
+    subprocess.check_call(["nerdctl", "push", estargz_docker_image_name])
     return estargz_docker_image_name
 
 
-convert_and_push_one_image("python:3.6")
+convert_and_push_one_image("python:3.7")

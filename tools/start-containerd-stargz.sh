@@ -1,9 +1,8 @@
 set -e
 
-containerd-stargz-grpc &
-containerd &
+systemctl enable --now containerd
 
 sleep 10
 
 # we verify that it works
-nerdctl --snapshotter=stargz run ghcr.io/stargz-containers/python:3.10-esgz python -c "print('hello-world')"
+nerdctl run python:3.10 python -c "print('hello-world')"
