@@ -15,10 +15,9 @@ def convert_and_push_one_image(docker_image_name: str):
     estargz_docker_image_name = CONVERTED_IMAGES_PREFIX + docker_image_name
     subprocess.check_call(
         [
-            "nerdctl",
+            "ctr-remote",
             "image",
-            "convert",
-            "--estargz",
+            "optimize",
             "--oci",
             "--estargz-compression-level",
             str(COMPRESSION_LEVEL),
