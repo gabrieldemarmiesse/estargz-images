@@ -14,11 +14,10 @@ def convert_and_push(docker_image_name: str, entrypoint=None, args=None):
 
     estargz_docker_image_name = CONVERTED_IMAGES_PREFIX + docker_image_name
 
-    additional_options = []
     if entrypoint:
-        additional_options += ["--entrypoint", entrypoint]
-    if args:
-        additional_options += ["--args", args]
+        additional_options = ["--entrypoint", entrypoint]
+    else:
+        additional_options = []
     subprocess.check_call(
         [
             "ctr-remote",
