@@ -38,10 +38,8 @@ def convert_and_push(docker_image_name: str, entrypoint=None, args=None):
     return estargz_docker_image_name
 
 
-convert_and_push("python:3.7", entrypoint='["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.8", entrypoint='["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.9", entrypoint='["python", "-c", "print(\'hello world\')"]')
-convert_and_push("python:3.10", entrypoint='["python", "-c", "print(\'hello world\')"]')
-convert_and_push(
-    "python:3.10-slim", entrypoint='["python", "-c", "print(\'hello world\')"]'
-)
+convert_and_push("python:3.7", '["python", "-c", "print(\'hello world\')"]')
+convert_and_push("python:3.8", '["python", "-c", "print(\'hello world\')"]')
+convert_and_push("python:3.9", '["python", "-c", "print(\'hello world\')"]')
+convert_and_push("python:3.10", '["python", "-c", "print(\'hello world\')"]')
+convert_and_push("python:3.10-slim", '["python", "-c", "print(\'hello world\')"]')
