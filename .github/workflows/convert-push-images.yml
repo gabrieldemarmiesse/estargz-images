@@ -16,4 +16,4 @@ jobs:
       - name: Convert and push images
         run: |
           sudo bash tools/start-containerd-stargz.sh
-          python ./convert_and_push_images.py
+          sudo python ./convert_and_push_images.py
