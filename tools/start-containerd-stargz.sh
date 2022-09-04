@@ -1,7 +1,7 @@
 set -e
 
-containerd-stargz-grpc > /dev/null 2>&1 &
-containerd > /dev/null 2>&1 &
+containerd-stargz-grpc &
+containerd &
 
 sleep 10
 
