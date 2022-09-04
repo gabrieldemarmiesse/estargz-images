@@ -15,5 +15,5 @@ jobs:
         run: echo ${{ secrets.REPOSITORY_PASSWORD }} | nerdctl login -u  ${{ secrets.REPOSITORY_USERNAME }} --password-stdin
       - name: Convert and push images
         run: |
-          sudo bash start-containerd-stargz.sh
+          sudo bash tools/start-containerd-stargz.sh
           python ./convert_and_push_images.py
