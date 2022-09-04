@@ -1,7 +1,7 @@
 set -e
 
-systemctl enable --now containerd-stargz-grpc
-systemctl enable --now containerd
+containerd-stargz-grpc > /dev/null 2>&1 &
+containerd > /dev/null 2>&1 &
 
 sleep 5
 
