@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from list_of_images_to_optimize import Image, images_to_optimize
 
-CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
+CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse/estargz-images"
 
 
 def get_normalized_image_name(docker_image_name: str) -> str:
@@ -46,22 +46,31 @@ class ConversionJob:
 
     @property
     def converted_image_name(self) -> str:
-        raise NotImplementedError
+        raise NotImplementedError("You need to subclass and implement this method")
 
     def convert(self):
-        # you need to subclass
-        raise NotImplementedError
+        raise NotImplementedError("You need to subclass and implement this method")
 
     def push(self):
         """Can be overwritten for the carbon copy (no-op, crane already copy it)"""
         subprocess.check_call(["nerdctl", "push", self.converted_image_name])
 
-    def pull_convert_and_push(self) -> str:
+    def job_was_already_done(self) -> bool:
+        """We check if the docker image already exists"""
+        try:
+            subprocess.check_call(["crane", "digest", self.converted_image_name])
+            return True
+        except subprocess.CalledProcessError:
+            return False
+
+    def pull_convert_and_push(self):
+        if self.job_was_already_done():
+            print(f"--> Image {self.converted_image_name} is already in the registry")
+            return
         subprocess.check_call(["nerdctl", "pull", self.src_image.name])
         self.convert()
         self.push()
         print(f"--> Pushed {self.converted_image_name} to registry")
-        return self.converted_image_name
 
 
 class OriginalConversionJob(ConversionJob):
@@ -124,8 +133,8 @@ def main():
         ]
 
     # 3 threads for more speed
-    pool = ThreadPoolExecutor(max_workers=3)
-    pool.map(ConversionJob.pull_convert_and_push, conversion_jobs)
+    with ThreadPoolExecutor(max_workers=3) as pool:
+        pool.map(ConversionJob.pull_convert_and_push, conversion_jobs)
     print("--> All done!")
 
 
