@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from list_of_images_to_optimize import Image, images_to_optimize
 
 CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
-
+NUMBER_OF_THREADS = 1
 
 def get_normalized_image_name(docker_image_name: str) -> str:
     """We add docker.io/library/ if necessary"""
@@ -134,8 +134,12 @@ def main():
         ]
 
     # 3 threads for more speed
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        pool.map(ConversionJob.pull_convert_and_push_if_necessary, conversion_jobs)
+    if NUMBER_OF_THREADS == 1:
+        for job in conversion_jobs:
+            job.pull_convert_and_push_if_necessary()
+    else:
+        with ThreadPoolExecutor(max_workers=NUMBER_OF_THREADS) as pool:
+            pool.map(ConversionJob.pull_convert_and_push_if_necessary, conversion_jobs)
     print("--> All done!")
 
 
