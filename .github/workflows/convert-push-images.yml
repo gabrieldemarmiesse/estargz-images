@@ -12,8 +12,10 @@ jobs:
       - uses: imjasonh/setup-crane@v0.1
       - name: Install tools
         run: sudo bash tools/install-nerdctl.sh
-      - name: Login to registry
+      - name: Login to registry with nerdctl
         run: echo ${{ secrets.REPOSITORY_PASSWORD }} | sudo nerdctl login -u  ${{ secrets.REPOSITORY_USERNAME }} --password-stdin
+      - name: Login to registry with crane
+        run: echo ${{ secrets.REPOSITORY_PASSWORD }} | sudo crane auth login -u  ${{ secrets.REPOSITORY_USERNAME }} --password-stdin docker.io
       - name: Convert and push images
         run: |
           sudo bash tools/start-containerd.sh

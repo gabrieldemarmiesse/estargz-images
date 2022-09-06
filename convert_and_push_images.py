@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from list_of_images_to_optimize import Image, images_to_optimize
 
-CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse/estargz-images"
+CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
 
 
 def get_normalized_image_name(docker_image_name: str) -> str:
@@ -63,10 +63,13 @@ class ConversionJob:
         except subprocess.CalledProcessError:
             return False
 
-    def pull_convert_and_push(self):
+    def pull_convert_and_push_if_necessary(self):
         if self.job_was_already_done():
             print(f"--> Image {self.converted_image_name} is already in the registry")
             return
+        self.pull_convert_and_push()
+
+    def pull_convert_and_push(self):
         subprocess.check_call(["nerdctl", "pull", self.src_image.name])
         self.convert()
         self.push()
@@ -78,7 +81,7 @@ class OriginalConversionJob(ConversionJob):
     def converted_image_name(self) -> str:
         return f"{CONVERTED_IMAGES_PREFIX}/{self.src_image.name}-org"
 
-    def convert(self):
+    def pull_convert_and_push(self):
         subprocess.check_call(
             [
                 "crane",
@@ -89,9 +92,7 @@ class OriginalConversionJob(ConversionJob):
                 self.converted_image_name,
             ]
         )
-
-    def push(self):
-        pass
+        print(f"--> Pushed {self.converted_image_name} to registry")
 
 
 class StargzConversionJob(ConversionJob):
@@ -133,8 +134,8 @@ def main():
         ]
 
     # 3 threads for more speed
-    with ThreadPoolExecutor(max_workers=3) as pool:
-        pool.map(ConversionJob.pull_convert_and_push, conversion_jobs)
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        pool.map(ConversionJob.pull_convert_and_push_if_necessary, conversion_jobs)
     print("--> All done!")
 
 
