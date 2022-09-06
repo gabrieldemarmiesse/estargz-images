@@ -51,10 +51,6 @@ class ConversionJob:
     def convert(self):
         raise NotImplementedError("You need to subclass and implement this method")
 
-    def push(self):
-        """Can be overwritten for the carbon copy (no-op, crane already copy it)"""
-        subprocess.check_call(["nerdctl", "push", self.converted_image_name])
-
     def job_was_already_done(self) -> bool:
         """We check if the docker image already exists"""
         try:
@@ -72,7 +68,7 @@ class ConversionJob:
     def pull_convert_and_push(self):
         subprocess.check_call(["nerdctl", "pull", self.src_image.name])
         self.convert()
-        self.push()
+        subprocess.check_call(["nerdctl", "push", self.converted_image_name])
         print(f"--> Pushed {self.converted_image_name} to registry")
 
 
