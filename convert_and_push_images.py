@@ -52,10 +52,14 @@ class ConversionJob:
         # you need to subclass
         raise NotImplementedError
 
+    def push(self):
+        """Can be overwritten for the carbon copy (no-op, crane already copy it)"""
+        subprocess.check_call(["nerdctl", "push", self.converted_image_name])
+
     def pull_convert_and_push(self) -> str:
         subprocess.check_call(["nerdctl", "pull", self.src_image.name])
         self.convert()
-        subprocess.check_call(["nerdctl", "push", self.converted_image_name])
+        self.push()
         print(f"--> Pushed {self.converted_image_name} to registry")
         return self.converted_image_name
 
@@ -67,8 +71,18 @@ class OriginalConversionJob(ConversionJob):
 
     def convert(self):
         subprocess.check_call(
-            ["nerdctl", "tag", self.src_image.name, self.converted_image_name]
+            [
+                "crane",
+                "copy",
+                "--platform",
+                "linux/amd64",
+                self.src_image.name,
+                self.converted_image_name,
+            ]
         )
+
+    def push(self):
+        pass
 
 
 class StargzConversionJob(ConversionJob):
@@ -112,6 +126,7 @@ def main():
     # 3 threads for more speed
     pool = ThreadPoolExecutor(max_workers=3)
     pool.map(ConversionJob.pull_convert_and_push, conversion_jobs)
+    print("--> All done!")
 
 
 if __name__ == "__main__":
