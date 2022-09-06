@@ -1,50 +1,118 @@
 import subprocess
-from list_of_images_to_optimize import images_to_optimize
+from concurrent.futures import ThreadPoolExecutor
 
-CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse/"
-COMPRESSION_LEVEL = 6
+from list_of_images_to_optimize import Image, images_to_optimize
 
-
-def create_and_push_org_image(docker_image_name: str):
-    copy_of_original_docker_image = CONVERTED_IMAGES_PREFIX + docker_image_name + "org"
-
-    subprocess.check_call(["nerdctl", "tag", docker_image_name, copy_of_original_docker_image])
-    subprocess.check_call(["nerdctl", "push", copy_of_original_docker_image])
+CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
 
 
-def create_and_push_esgz_image(docker_image_name: str, entrypoint):
+def get_normalized_image_name(docker_image_name: str) -> str:
+    """We add docker.io/library/ if necessary"""
     if "/" not in docker_image_name:
-        normalized_docker_image_name = "docker.io/library/" + docker_image_name
+        return "docker.io/library/" + docker_image_name
     else:
-        normalized_docker_image_name = docker_image_name
-    estargz_docker_image_name = CONVERTED_IMAGES_PREFIX + docker_image_name + "esgz"
+        return docker_image_name
 
-    if entrypoint:
-        additional_options = ["--entrypoint", entrypoint]
-    else:
+
+class ConversionJob:
+    def __init__(self, src_image: Image):
+        self.src_image = src_image
+
+    def ctr_remote_image_optimize(
+        self, optimize: bool = True, zstdchunked: bool = False
+    ):
+        src_image_name = get_normalized_image_name(self.src_image.name)
+
         additional_options = []
-    subprocess.check_call(
-        [
-            "ctr-remote",
-            "image",
-            "optimize",
-            "--oci",
-            "--estargz-compression-level",
-            str(COMPRESSION_LEVEL),
-            normalized_docker_image_name,
-            estargz_docker_image_name,
+        if self.src_image.entrypoint is not None:
+            additional_options += ["--entrypoint", self.src_image.entrypoint]
+        if not optimize:
+            additional_options.append("--no-optimize")
+        if zstdchunked:
+            additional_options.append("--zstdchunked")
+
+        subprocess.check_call(
+            [
+                "ctr-remote",
+                "image",
+                "optimize",
+                "--oci",
+                "--no-optimize",
+                src_image_name,
+                self.converted_image_name,
+            ]
+            + additional_options
+        )
+
+    @property
+    def converted_image_name(self) -> str:
+        raise NotImplementedError
+
+    def convert(self):
+        # you need to subclass
+        raise NotImplementedError
+
+    def pull_convert_and_push(self) -> str:
+        subprocess.check_call(["nerdctl", "pull", self.src_image.name])
+        self.convert()
+        subprocess.check_call(["nerdctl", "push", self.converted_image_name])
+        print(f"--> Pushed {self.converted_image_name} to registry")
+        return self.converted_image_name
+
+
+class OriginalConversionJob(ConversionJob):
+    @property
+    def converted_image_name(self) -> str:
+        return f"{CONVERTED_IMAGES_PREFIX}/{self.src_image.name}-org"
+
+    def convert(self):
+        subprocess.check_call(
+            ["nerdctl", "tag", self.src_image.name, self.converted_image_name]
+        )
+
+
+class StargzConversionJob(ConversionJob):
+    @property
+    def converted_image_name(self) -> str:
+        return f"{CONVERTED_IMAGES_PREFIX}/{self.src_image.name}-esgz-noopt"
+
+    def convert(self):
+        self.ctr_remote_image_optimize(optimize=False)
+
+
+class EStargzConversionJob(ConversionJob):
+    @property
+    def converted_image_name(self) -> str:
+        return f"{CONVERTED_IMAGES_PREFIX}/{self.src_image.name}-esgz"
+
+    def convert(self):
+        self.ctr_remote_image_optimize()
+
+
+class EStargzZstdchunkedConversionJob(ConversionJob):
+    @property
+    def converted_image_name(self) -> str:
+        return f"{CONVERTED_IMAGES_PREFIX}/{self.src_image.name}-zstdchunked"
+
+    def convert(self):
+        self.ctr_remote_image_optimize(zstdchunked=True)
+
+
+def main():
+    conversion_jobs = []
+
+    for image_and_args in images_to_optimize:
+        conversion_jobs += [
+            OriginalConversionJob(image_and_args),
+            StargzConversionJob(image_and_args),
+            EStargzConversionJob(image_and_args),
+            EStargzZstdchunkedConversionJob(image_and_args),
         ]
-        + additional_options
-    )
-    subprocess.check_call(["nerdctl", "push", estargz_docker_image_name])
+
+    # 3 threads for more speed
+    pool = ThreadPoolExecutor(max_workers=3)
+    pool.map(ConversionJob.pull_convert_and_push, conversion_jobs)
 
 
-def convert_and_push(docker_image_name: str, entrypoint=None):
-    subprocess.check_call(["nerdctl", "pull", docker_image_name])
-
-    create_and_push_org_image(docker_image_name)
-    create_and_push_esgz_image(docker_image_name, entrypoint)
-
-
-for image_and_args in images_to_optimize:
-    convert_and_push(*image_and_args)
+if __name__ == "__main__":
+    main()
