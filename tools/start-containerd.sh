@@ -1,7 +1,7 @@
 set -e -x
 
 containerd -v
-systemctl enable --now containerd
+containerd &
 
 sleep 5
 
