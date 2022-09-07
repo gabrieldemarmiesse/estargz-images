@@ -74,6 +74,7 @@ class ConversionJob:
 
         # we might need to sleep a bit to make sure the image is available for push
         time.sleep(5)
+        subprocess.check_call(["nerdctl", "image", "ls"])
         subprocess.check_call(["nerdctl", "push", self.converted_image_name])
         print(f"--> Pushed {self.converted_image_name} to registry")
 
