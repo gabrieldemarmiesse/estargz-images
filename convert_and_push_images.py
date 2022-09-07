@@ -1,10 +1,12 @@
 import subprocess
+import time
 from concurrent.futures import ThreadPoolExecutor
 
 from list_of_images_to_optimize import Image, images_to_optimize
 
 CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
 NUMBER_OF_THREADS = 1
+
 
 def get_normalized_image_name(docker_image_name: str) -> str:
     """We add docker.io/library/ if necessary"""
@@ -69,6 +71,9 @@ class ConversionJob:
     def pull_convert_and_push(self):
         subprocess.check_call(["nerdctl", "pull", "-q", self.src_image.name])
         self.convert()
+
+        # we might need to sleep a bit to make sure the image is available for push
+        time.sleep(5)
         subprocess.check_call(["nerdctl", "push", self.converted_image_name])
         print(f"--> Pushed {self.converted_image_name} to registry")
 
