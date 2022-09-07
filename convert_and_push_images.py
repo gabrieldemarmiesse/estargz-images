@@ -63,10 +63,11 @@ class ConversionJob:
         if self.job_was_already_done():
             print(f"--> Image {self.converted_image_name} is already in the registry")
             return
+        print(f"--> Image {self.converted_image_name} not in registry, converting...")
         self.pull_convert_and_push()
 
     def pull_convert_and_push(self):
-        subprocess.check_call(["nerdctl", "pull", self.src_image.name])
+        subprocess.check_call(["nerdctl", "pull", "-q", self.src_image.name])
         self.convert()
         subprocess.check_call(["nerdctl", "push", self.converted_image_name])
         print(f"--> Pushed {self.converted_image_name} to registry")

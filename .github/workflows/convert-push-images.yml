@@ -19,4 +19,4 @@ jobs:
       - name: Convert and push images
         run: |
           sudo bash tools/start-containerd.sh
-          sudo python ./convert_and_push_images.py
+          sudo python -u ./convert_and_push_images.py
