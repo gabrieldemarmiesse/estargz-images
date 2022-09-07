@@ -20,7 +20,11 @@ images_to_optimize = [
     # Image("nixos/nix:2.3.12", '["sh", "-c", "echo hello world"]'),
     Image("fedora:35", '["sh", "-c", "echo hello world"]'),
     Image("rethinkdb:2.4.1"),
-    Image("glassfish:4.1-jdk8"),
+
+    # doesn't work:
+    # Error: failed to copy image: PUT https://index.docker.io/v2/.../glassfish/manifests/4.1-jdk8-org:
+    # DENIED: unknown manifest class for application/octet-stream
+    #Image("glassfish:4.1-jdk8"),
     Image("drupal:9.3.9"),
     Image("jenkins:2.60.3"),
     Image("redis:6.2.6"),
