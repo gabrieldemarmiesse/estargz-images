@@ -26,6 +26,7 @@ class Image:
 
 images_to_optimize = [
     # python images
+    Image("python:3.7-slim", '["python", "-c", "print(\'hello world\')"]'),
     Image("python:3.7", '["python", "-c", "print(\'hello world\')"]'),
     Image("python:3.8", '["python", "-c", "print(\'hello world\')"]'),
     Image("python:3.9", '["python", "-c", "print(\'hello world\')"]'),
