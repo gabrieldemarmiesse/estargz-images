@@ -1,14 +1,16 @@
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 from list_of_images_to_optimize import Image, images_to_optimize
 
 CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
 NUMBER_OF_THREADS = 1
 
+
 def run(args: list):
-    print("--> Executing: "," ".join(args))
+    print("--> Executing: ", " ".join(args))
     subprocess.check_call(args)
 
 
@@ -32,20 +34,35 @@ class ConversionJob:
         additional_options = []
         if self.src_image.entrypoint is not None:
             additional_options += ["--entrypoint", self.src_image.entrypoint]
+
+        for mount_src, mount_dst in self.src_image.mount:
+            mount_src = (Path(__file__).parent / mount_src).absolute()
+            additional_options += [
+                "--mount",
+                f"type=bind,src={mount_src},dst={mount_dst},options=rbind",
+            ]
+
+        for env_name, env_value in self.src_image.env.items():
+            additional_options += ["--env", f"{env_name}={env_value}"]
+
         if not optimize:
             additional_options.append("--no-optimize")
         if zstdchunked:
             additional_options.append("--zstdchunked")
 
-        run([
+        run(
+            [
                 "ctr-remote",
                 "image",
                 "optimize",
                 "--oci",
-            ] + additional_options + [
+            ]
+            + additional_options
+            + [
                 src_image_name,
                 self.converted_image_name,
-            ])
+            ]
+        )
 
     @property
     def converted_image_name(self) -> str:
@@ -74,8 +91,9 @@ class ConversionJob:
         self.convert()
 
         # we might need to sleep a bit to make sure the image is available for push
+        # I'm not sure if this is needed, but we had some flakyness in the
+        # push step in the CI, so it's what I tried.
         time.sleep(5)
-        run(["nerdctl", "image", "ls"])
         run(["nerdctl", "push", self.converted_image_name])
         print(f"--> Pushed {self.converted_image_name} to registry")
 
