@@ -15,9 +15,7 @@ from image_class import Image
 
 images_to_optimize = [
     Image("alpine:3.15.3", ["sh", "-c", "echo hello world"]),
-    # this one doesn't work by pushing to dockerhub because
-    # dockerhub can't accept docker images with multiple '/'
-    # Image("nixos/nix:2.3.12", '["sh", "-c", "echo hello world"]'),
+    Image("nixos/nix:2.3.12", ["sh", "-c", "echo hello world"]),
     Image("fedora:35", ["sh", "-c", "echo hello world"]),
     Image("rethinkdb:2.4.1"),
     # doesn't work:
@@ -48,6 +46,10 @@ images_to_optimize = [
         ["sh", "-c", "cd /src; gcc main.c; ./a.out; exit\n"],
         mount=[("mounts/gcc", "/src")],
     ),
+    Image('golang:1.18', ["sh", "-c", 'cd /go/src; go run main.go; exit\n'], mount=[('mounts/go', '/go/src')]),
+    Image("jruby:9.3.4", ["jruby", "-e", "puts 'hello'; exit\n"]),
+    Image("r-base:4.1.3", ["R", "--no-save", "-e", 'sprintf("hello")']),
+    Image("perl:5.34.1", ['perl',  "-e", 'print("hello")']),
     # python images
     Image("python:3.7-slim", ["python", "-c", "print('hello world')"]),
     Image("python:3.7", ["python", "-c", "print('hello world')"]),
@@ -55,8 +57,6 @@ images_to_optimize = [
     Image("python:3.9", ["python", "-c", "print('hello world')"]),
     Image("python:3.10", ["python", "-c", "print('hello world')"]),
     Image("python:3.10-slim", ["python", "-c", "print('hello world')"]),
-    # databases images
-    Image("postgres:14.2"),
-    Image("wordpress:5.9.2"),
-    Image("rabbitmq:3.9.14"),
+    Image("pypy:3.9", ["pypy3", "-c", "print('hello world')"]),
+    Image("node:17.8.0", ["node", "-e", 'console.log("hello")'])
 ]
