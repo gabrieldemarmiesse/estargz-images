@@ -7,7 +7,7 @@ class Image:
     def __init__(
         self,
         name: str,
-        entrypoint: Optional[str] = None,
+        entrypoint: Optional[list[str]] = None,
         env: dict = {},
         mount: list[tuple[str, str]] = [],
     ):

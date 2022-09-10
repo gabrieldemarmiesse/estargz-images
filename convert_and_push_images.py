@@ -2,11 +2,11 @@ import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-
+import json
 from list_of_images_to_optimize import Image, images_to_optimize
 
-CONVERTED_IMAGES_PREFIX = "docker.io/gabrieldemarmiesse"
-NUMBER_OF_THREADS = 1
+CONVERTED_IMAGES_PREFIX = "ghcr.io/gabrieldemarmiesse/estargz-images"
+NUMBER_OF_THREADS = 2
 
 
 def run(args: list):
@@ -33,7 +33,10 @@ class ConversionJob:
 
         additional_options = []
         if self.src_image.entrypoint is not None:
-            additional_options += ["--entrypoint", self.src_image.entrypoint]
+            additional_options += [
+                "--entrypoint",
+                json.dumps(self.src_image.entrypoint),
+            ]
 
         for mount_src, mount_dst in self.src_image.mount:
             mount_src = (Path(__file__).parent / mount_src).absolute()

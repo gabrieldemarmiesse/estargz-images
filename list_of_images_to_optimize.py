@@ -14,17 +14,16 @@ elasticsearch as example for the mount.
 from image_class import Image
 
 images_to_optimize = [
-    Image("alpine:3.15.3", '["sh", "-c", "echo hello world"]'),
+    Image("alpine:3.15.3", ["sh", "-c", "echo hello world"]),
     # this one doesn't work by pushing to dockerhub because
     # dockerhub can't accept docker images with multiple '/'
     # Image("nixos/nix:2.3.12", '["sh", "-c", "echo hello world"]'),
-    Image("fedora:35", '["sh", "-c", "echo hello world"]'),
+    Image("fedora:35", ["sh", "-c", "echo hello world"]),
     Image("rethinkdb:2.4.1"),
-
     # doesn't work:
     # Error: failed to copy image: PUT https://index.docker.io/v2/.../glassfish/manifests/4.1-jdk8-org:
     # DENIED: unknown manifest class for application/octet-stream
-    #Image("glassfish:4.1-jdk8"),
+    # Image("glassfish:4.1-jdk8"),
     Image("drupal:9.3.9"),
     Image("jenkins:2.60.3"),
     Image("redis:6.2.6"),
@@ -43,19 +42,19 @@ images_to_optimize = [
             )
         ],
     ),
-    Image("php:8.1.4", '["php", "-r", "echo "hello world\\n";"]'),
+    Image("php:8.1.4", ["php", "-r", 'echo "hello world\\n";']),
     Image(
         "gcc:11.2.0",
-        '["sh", "-c", "cd /src; gcc main.c; ./a.out; exit\n"]',
+        ["sh", "-c", "cd /src; gcc main.c; ./a.out; exit\n"],
         mount=[("mounts/gcc", "/src")],
     ),
     # python images
-    Image("python:3.7-slim", '["python", "-c", "print(\'hello world\')"]'),
-    Image("python:3.7", '["python", "-c", "print(\'hello world\')"]'),
-    Image("python:3.8", '["python", "-c", "print(\'hello world\')"]'),
-    Image("python:3.9", '["python", "-c", "print(\'hello world\')"]'),
-    Image("python:3.10", '["python", "-c", "print(\'hello world\')"]'),
-    Image("python:3.10-slim", '["python", "-c", "print(\'hello world\')"]'),
+    Image("python:3.7-slim", ["python", "-c", "print('hello world')"]),
+    Image("python:3.7", ["python", "-c", "print('hello world')"]),
+    Image("python:3.8", ["python", "-c", "print('hello world')"]),
+    Image("python:3.9", ["python", "-c", "print('hello world')"]),
+    Image("python:3.10", ["python", "-c", "print('hello world')"]),
+    Image("python:3.10-slim", ["python", "-c", "print('hello world')"]),
     # databases images
     Image("postgres:14.2"),
     Image("wordpress:5.9.2"),

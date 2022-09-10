@@ -4,6 +4,9 @@ on: [push]
 jobs:
   convert-push-images:
     runs-on: ubuntu-20.04
+    permissions:
+      packages: write
+      contents: read
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -13,9 +16,9 @@ jobs:
       - name: Install tools
         run: sudo bash tools/install-nerdctl.sh
       - name: Login to registry with nerdctl
-        run: echo ${{ secrets.REPOSITORY_PASSWORD }} | sudo nerdctl login -u  ${{ secrets.REPOSITORY_USERNAME }} --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo nerdctl login ghcr.io -u $ --password-stdin
       - name: Login to registry with crane
-        run: echo ${{ secrets.REPOSITORY_PASSWORD }} | sudo crane auth login -u  ${{ secrets.REPOSITORY_USERNAME }} --password-stdin docker.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | sudo crane auth login -u $ --password-stdin ghcr.io
       - name: Convert and push images
         run: |
           sudo bash tools/start-containerd.sh
