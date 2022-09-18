@@ -17,8 +17,9 @@ jobs:
         run: sudo bash tools/install-nerdctl.sh
       - name: Convert and push images
         run: |
-          sudo bash tools/start-containerd.sh
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo nerdctl login ghcr.io -u $ --password-stdin
-          echo "${{ secrets.GITHUB_TOKEN }}" | sudo crane auth login -u $ --password-stdin ghcr.io
-          sudo crane digest ghcr.io/gabrieldemarmiesse/estargz-images/alpine:3.15.3-org
-          sudo python -u ./convert_and_push_images.py
+          sudo -s
+          bash tools/start-containerd.sh
+          echo "${{ secrets.GITHUB_TOKEN }}" | nerdctl login ghcr.io -u $ --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | crane auth login -u $ --password-stdin ghcr.io
+          crane manifest ghcr.io/gabrieldemarmiesse/estargz-images/alpine:3.15.3-org
+          python -u ./convert_and_push_images.py
