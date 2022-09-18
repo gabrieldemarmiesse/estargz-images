@@ -17,5 +17,5 @@ jobs:
         run: sudo bash tools/install-nerdctl.sh
       - name: Convert and push images
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
         run: sudo -E bash tools/start-containerd-and-convert.sh
