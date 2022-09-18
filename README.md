@@ -5,7 +5,7 @@ At every commit on master, the Docker images will be converted to the estargz fo
 to the gabrieldemarmiesse/ namespace. You can then use those estargz images like so
 
 ```bash
-nerdctl --snapshotter=stargz run -it gabrieldemarmiesse/python:3.9-esgz
+nerdctl --snapshotter=stargz run -it ghcr.io/gabrieldemarmiesse/estargz-images/python:3.9-esgz
 ```
 
 The original image is `python:3.9`
@@ -14,7 +14,7 @@ A copy of the original image is also pushed for benchmarking purposes.
 It will have a name like so:
 
 ```
-gabrieldemarmiesse/python:3.9-org
+ghcr.io/gabrieldemarmiesse/estargz-images/python:3.9-org
 ```
 
 If you want to add a docker image to the list of Docker images available for conversion, 
