@@ -18,4 +18,4 @@ jobs:
       - name: Convert and push images
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: sudo bash tools/start-containerd-and-convert.sh
+        run: sudo -E bash tools/start-containerd-and-convert.sh
