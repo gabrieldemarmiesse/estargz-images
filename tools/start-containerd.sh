@@ -1,4 +1,4 @@
-set -e -x
+set -eux
 
 containerd -v
 containerd &

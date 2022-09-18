@@ -57,6 +57,7 @@ images_to_optimize = [
     Image("python:3.9", ["python", "-c", "print('hello world')"]),
     Image("python:3.10", ["python", "-c", "print('hello world')"]),
     Image("python:3.10-slim", ["python", "-c", "print('hello world')"]),
+    Image("python:3.11.0rc2", ["python", "-c", "print('hello world')"]),
     Image("pypy:3.9", ["pypy3", "-c", "print('hello world')"]),
     Image("node:17.8.0", ["node", "-e", 'console.log("hello")'])
 ]
