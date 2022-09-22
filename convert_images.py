@@ -1,12 +1,15 @@
+import json
 import subprocess
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-import json
+
 from list_of_images_to_optimize import Image, images_to_optimize
 
 CONVERTED_IMAGES_PREFIX = "ghcr.io/gabrieldemarmiesse/estargz-images"
 NUMBER_OF_THREADS = 1
+PUSH = "--push" in sys.argv
 
 
 def run(args: list):
@@ -93,12 +96,13 @@ class ConversionJob:
         run(["nerdctl", "pull", "-q", self.src_image.name])
         self.convert()
 
-        # we might need to sleep a bit to make sure the image is available for push
-        # I'm not sure if this is needed, but we had some flakyness in the
-        # push step in the CI, so it's what I tried.
-        time.sleep(5)
-        run(["nerdctl", "push", self.converted_image_name])
-        print(f"--> Pushed {self.converted_image_name} to registry")
+        if PUSH:
+            # we might need to sleep a bit to make sure the image is available for push
+            # I'm not sure if this is needed, but we had some flakyness in the
+            # push step in the CI, so it's what I tried.
+            time.sleep(5)
+            run(["nerdctl", "push", self.converted_image_name])
+            print(f"--> Pushed {self.converted_image_name} to registry")
 
 
 class OriginalConversionJob(ConversionJob):
@@ -151,14 +155,16 @@ def main():
     conversion_jobs = []
 
     for image_and_args in images_to_optimize:
+        if PUSH:
+            # this is just transferring layers. If we don't have permission to push,
+            # we can't do it.
+            conversion_jobs.append(OriginalConversionJob(image_and_args))
         conversion_jobs += [
-            OriginalConversionJob(image_and_args),
             StargzConversionJob(image_and_args),
             EStargzConversionJob(image_and_args),
             EStargzZstdchunkedConversionJob(image_and_args),
         ]
 
-    # 3 threads for more speed
     if NUMBER_OF_THREADS == 1:
         for job in conversion_jobs:
             job.pull_convert_and_push_if_necessary()
