@@ -1,6 +1,5 @@
 name: Convert image
-on:
-  pull_request: {}
+on: [pull_request]
 
 jobs:
   convert-push-images:
